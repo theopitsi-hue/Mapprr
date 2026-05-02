@@ -281,12 +281,12 @@ public class PoissonDiscSampler
 
     public class Data
     {
-        public Vertex[] points;
+        public Point[] points;
         public int[,] grid;
 
         public Data(Vector2[] pointsIn, int[,] grid)
         {
-            this.points = new Vertex[pointsIn.Length];
+            this.points = new Point[pointsIn.Length];
             for (int i = 0; i < pointsIn.Length; i++)
             {
                 this.points[i] = new(pointsIn[i]);

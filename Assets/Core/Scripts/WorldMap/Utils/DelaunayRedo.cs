@@ -8,7 +8,7 @@ public class DelaunayRedo
 {
     private static bool debug = false;
 
-    public static List<Triangle> BowyerWatsonTriangulation(List<Vertex> points)
+    public static List<Triangle> BowyerWatsonTriangulation(List<Point> points)
     {
         if (debug) Debug.Log($"Triangulating {points.Count} points..");
 
@@ -72,7 +72,7 @@ public class DelaunayRedo
             //re-triangulate the hole
             foreach (var edge in polygon)
             {
-                //ordering might be weird.
+                //ordering might be weird, but internal triangle ordering fixes should solve it
                 Triangle nt = new Triangle(edge.a, edge.b, point);
 
                 //prevent degenerate triangles entirely from being added to the final triangulation
@@ -122,7 +122,7 @@ public class DelaunayRedo
     }
 
     //todo: change to convex hull -> least binding triangle, because this doesnt cover all vertices.
-    private static Triangle GenerateSuperTriangle(List<Vertex> points)
+    private static Triangle GenerateSuperTriangle(List<Point> points)
     {
         float minx = float.PositiveInfinity;
         float miny = float.PositiveInfinity;

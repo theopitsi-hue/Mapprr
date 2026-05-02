@@ -13,7 +13,7 @@ public class VoronoiAssembler
         this.domain = domain;
     }
 
-    public void Generate(List<Vertex> vertices, List<Triangle> tris)
+    public void Generate(List<Point> vertices, List<Triangle> tris)
     {
         Dictionary<Edge, List<Triangle>> edgeMap = new();
         //generate an edgemap- any triangles that share an edge basically,

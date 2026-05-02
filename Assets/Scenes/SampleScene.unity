@@ -457,11 +457,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51074d263d3c12948b0ac73dcc0d3598, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  domain:
+    ScaleX: 190
+    ScaleY: 100
   sampler:
     random:
       state: 0
     drawGizmos: 0
     points: []
+  sampleResolution: 2.04
   tris: []
 --- !u!4 &1545270025
 Transform:

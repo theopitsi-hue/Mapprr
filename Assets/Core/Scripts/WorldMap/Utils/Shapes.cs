@@ -4,35 +4,35 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
-public class Vertex
+public class Point
 {
     [SerializeField]
     public Vector2 pos;
     public float x => pos.x;
     public float y => pos.y;
-    public float VectorMagnitude => pos.magnitude;
-    public float VectorMagnitudeSqr => pos.sqrMagnitude;
 
-    public Vertex(Vector2 pos)
+    public Point(Vector2 pos)
     {
         this.pos = pos;
     }
 
-    public Vertex(float a, float b)
+    public Point(float a, float b)
     {
         this.pos = new(a, b);
     }
 }
 
 [Serializable]
+/// Data class for Edges. Provides equality checks that consider two edges the same as long as
+/// their points are the same, in any order.
 public class Edge
 {
     [SerializeField]
-    public Vertex a, b;
+    public Point a, b;
 
     public float Length => (a.pos - b.pos).magnitude;
 
-    public Edge(Vertex a, Vertex b)
+    public Edge(Point a, Point b)
     {
         this.a = a;
         this.b = b;
@@ -59,22 +59,23 @@ public class Edge
 [Serializable]
 public class Triangle
 {
-    public Vertex a, b, c;
+    public Point a, b, c;
 
     public Edge e1, e2, e3;
 
     public Edge[] edges;
-    public Vertex[] vertices;
+    public Point[] vertices;
 
-    public Vertex CircumCenter;
+    public Point CircumCenter;
     public float CircumRadius;
 
     private bool degenerate;
 
-    public Triangle(Vertex a, Vertex b, Vertex c)
+    public Triangle(Point a, Point b, Point c)
     {
         degenerate = false;
 
+        //fixing winding for mandatory CCW
         float cross = (b.x - a.x) * (c.y - a.y) -
                  (b.y - a.y) * (c.x - a.x);
 
@@ -88,7 +89,7 @@ public class Triangle
         this.c = c;
 
         edges = new Edge[3];
-        vertices = new Vertex[3];
+        vertices = new Point[3];
 
         e1 = new Edge(a, b);
         e2 = new Edge(b, c);
@@ -102,31 +103,11 @@ public class Triangle
         vertices[1] = b;
         vertices[2] = c;
 
-        // float ab = a.VectorMagnitudeSqr;
-        // float cd = b.VectorMagnitudeSqr;
-        // float ef = c.VectorMagnitudeSqr;
-
-        // float ax = a.x;
-        // float ay = a.y;
-        // float bx = b.x;
-        // float by = b.y;
-        // float cx = c.x;
-        // float cy = c.y;
-
-        // float denomX = (ax * (cy - by) + bx * (ay - cy) + cx * (by - ay));
-        // float denomY = (ay * (cx - bx) + by * (ax - cx) + cy * (bx - ax));
-
-        // float circumX = (ab * (cy - by) + cd * (ay - cy) + ef * (by - ay)) / denomX;
-        // float circumY = (ab * (cx - bx) + cd * (ax - cx) + ef * (bx - ax)) / denomY;
-
-        // var circum = new Vertex(circumX / 2f, circumY / 2f);
-        // float circumRadius = Vector2.Distance(a.pos, circum.pos);
 
         Vector2 center = CalcCircumCenter();
-        //all points should b exactly on the circumradius so this is fine, right?
-        float radius = Vector2.Distance(a.pos, center);
+        float radius = CalcCircumRadius();
 
-        CircumCenter = new Vertex(center);
+        CircumCenter = new Point(center);
         CircumRadius = radius;
     }
 
@@ -172,19 +153,10 @@ public class Triangle
 
     public float CalcCircumRadius()
     {
-        float sideA = Vector2.Distance(b.pos, c.pos); //BC
-        float sideB = Vector2.Distance(c.pos, a.pos); //CA
-        float sideC = Vector2.Distance(a.pos, b.pos); //AB
 
-        float area = (float)Area();
-
-        if (Mathf.Approximately(area, 0))
-        {
-            Debug.LogWarning("Degenerate triangle; no circumradius.");
-            return 0;
-        }
-
-        return (sideA * sideB * sideC) / (4f * area);
+        //all points should b exactly the same distance from the center and on the circumradius
+        //so this is fine
+        return Vector2.Distance(a.pos, CircumCenter.pos);
     }
 
     private double Area()
@@ -196,7 +168,7 @@ public class Triangle
         );
     }
 
-    public bool IsPointInCircumCircle(Vertex p)
+    public bool IsPointInCircumCircle(Point p)
     {
         float dist = Vector2.Distance(p.pos, CircumCenter.pos);
         return dist < CircumRadius;
@@ -215,7 +187,7 @@ public class Triangle
         return false;
     }
 
-    public bool HasVertex(Vertex v)
+    public bool HasVertex(Point v)
     {
         return a == v || b == v || c == v;
     }
