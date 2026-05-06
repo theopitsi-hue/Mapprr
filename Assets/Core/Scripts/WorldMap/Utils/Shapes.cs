@@ -14,11 +14,11 @@ public class Point
     public Point(Vector2 pos)
     {
         this.pos = pos;
-    }
 
-    public Point(float a, float b)
-    {
-        this.pos = new(a, b);
+        if (pos == null)
+        {
+            Debug.Log("HOW");
+        }
     }
 }
 
@@ -104,11 +104,8 @@ public class Triangle
         vertices[2] = c;
 
 
-        Vector2 center = CalcCircumCenter();
-        float radius = CalcCircumRadius();
-
-        CircumCenter = new Point(center);
-        CircumRadius = radius;
+        CircumCenter = new Point(CalcCircumCenter());
+        CircumRadius = CalcCircumRadius();
     }
 
     public bool SharesAnyEdges(Triangle other)
@@ -135,7 +132,7 @@ public class Triangle
 
         if (Mathf.Approximately(D, 0))
         {
-            //Debug.LogWarning("Points are collinear; no circumcenter exists.");
+            Debug.LogWarning("Points are collinear; no circumcenter exists.");
             degenerate = true;
             return Vector2.zero;
         }
@@ -203,4 +200,13 @@ public class Triangle
                HasVertex(o.c);
     }
 
+    public void DrawGizmos()
+    {
+
+        Gizmos.color = Color.green;
+        Gizmos.DrawLine(a.pos, b.pos);
+        Gizmos.DrawLine(b.pos, c.pos);
+        Gizmos.DrawLine(c.pos, a.pos);
+
+    }
 }

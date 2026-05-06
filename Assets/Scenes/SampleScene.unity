@@ -465,7 +465,7 @@ MonoBehaviour:
       state: 0
     drawGizmos: 0
     points: []
-  sampleResolution: 2.04
+  sampleResolution: 1.1
   tris: []
 --- !u!4 &1545270025
 Transform:

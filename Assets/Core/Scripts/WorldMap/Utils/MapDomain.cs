@@ -39,6 +39,8 @@ public class MapDomain
         );
     }
 
+    //todo - move to gen utils class
+    //https://en.wikipedia.org/wiki/Liang–Barsky_algorithm
     public bool ClipLineToRect(ref Vector2 a, ref Vector2 b)
     {
         float t0 = 0f;

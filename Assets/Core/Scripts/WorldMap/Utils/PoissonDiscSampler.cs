@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Unity.Mathematics;
 using Unity.VisualScripting;
@@ -20,20 +21,22 @@ public class PoissonDiscSampler
 
     private int[,] grid;
     [SerializeField]
-    private Vector2[] points;
+    private List<Vector2> points;
     private float cellSize;
     private float r;
     private int N;
     private int gridWidth;
     private int gridHeight;
 
-    private int currentIndex = 0;
+    // private int currentIndex = 0;
     private int domainSizeX => domain.ScaleX;
     private int domainSizeY => domain.ScaleY;
 
     private bool hasData = false;
     private Data cachedData;
     private MapDomain domain;
+
+    private bool packUntilMax = false;
 
     public PoissonDiscSampler(MapDomain domain)
     {
@@ -57,9 +60,7 @@ public class PoissonDiscSampler
 
         if (N <= 0)
         {
-            var newN = (domainSizeX / r) * (domainSizeY / r);
-
-            this.N = Mathf.RoundToInt(newN);
+            packUntilMax = true;
         }
 
         //cell size bounded by r/sqrt(n=2)
@@ -73,7 +74,7 @@ public class PoissonDiscSampler
         //hold indexes
         grid = new int[gridWidth, gridHeight];
 
-        points = new Vector2[this.N];
+        points = new();
 
         for (int i = 0; i < gridWidth; i++)
         {
@@ -109,10 +110,9 @@ public class PoissonDiscSampler
         int i = Mathf.FloorToInt(point.x / cellSize);
         int j = Mathf.FloorToInt(point.y / cellSize);
 
-        var index = currentIndex;
-        points[index] = point;
+        points.Add(point);
+        var index = points.Count - 1;
         grid[i, j] = index;
-        currentIndex++;
         return index;
     }
 
@@ -132,7 +132,7 @@ public class PoissonDiscSampler
         AddInitialPoint();
         activeList.Add(0);
 
-        while (activeList.Count > 0 && currentIndex + 1 < N)
+        while (activeList.Count > 0)
         {
             //pick a random index
             var ri = random.NextInt(activeList.Count);
@@ -233,7 +233,7 @@ public class PoissonDiscSampler
         }
         if (cachedData == null)
         {
-            cachedData = new Data((Vector2[])points.Clone(), (int[,])grid.Clone());
+            cachedData = new Data(points.ToList(), (int[,])grid.Clone());
         }
         return cachedData;
     }
@@ -271,7 +271,7 @@ public class PoissonDiscSampler
 
         //Draw the sampled points
         Gizmos.color = Color.yellow;
-        for (int i = 0; i < currentIndex; i++)
+        for (int i = 0; i < points.Count; i++)
         {
             // Draw a small sphere for each point
             // Using a small fraction of 'r' to ensure they don't overlap visually
@@ -284,10 +284,10 @@ public class PoissonDiscSampler
         public Point[] points;
         public int[,] grid;
 
-        public Data(Vector2[] pointsIn, int[,] grid)
+        public Data(List<Vector2> pointsIn, int[,] grid)
         {
-            this.points = new Point[pointsIn.Length];
-            for (int i = 0; i < pointsIn.Length; i++)
+            this.points = new Point[pointsIn.Count];
+            for (int i = 0; i < pointsIn.Count; i++)
             {
                 this.points[i] = new(pointsIn[i]);
             }

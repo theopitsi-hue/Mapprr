@@ -22,6 +22,7 @@ public class WorldMapManager : MonoBehaviour
     {
         sampler = new PoissonDiscSampler(domain);
         sampler.Generate(sampleResolution);
+        //post sampler step: curb points based on height map ?
         tris = DelaunayRedo.BowyerWatsonTriangulation(sampler.GetData().points.ToList());
 
         voronoiAssembler = new(domain);
@@ -48,10 +49,7 @@ public class WorldMapManager : MonoBehaviour
             foreach (var tri in tris)
             {
 
-                // Gizmos.color = Color.green;
-                // Gizmos.DrawLine(tri.a.pos, tri.b.pos);
-                // Gizmos.DrawLine(tri.b.pos, tri.c.pos);
-                // Gizmos.DrawLine(tri.c.pos, tri.a.pos);
+                //tri.DrawGizmos();
 
 
                 Gizmos.color = Color.red;
