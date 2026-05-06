@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -16,6 +17,12 @@ public class WorldMapManager : MonoBehaviour
     VoronoiAssembler voronoiAssembler;
 
     [SerializeField] List<Triangle> tris;
+    [SerializeField] List<Point> points;
+
+    public bool drawVoronoi = false;
+    public bool drawTris = false;
+
+    Dictionary<Point, List<Triangle>> pointTriangles;
 
     // Start is called before the first frame update
     void Start()
@@ -23,10 +30,14 @@ public class WorldMapManager : MonoBehaviour
         sampler = new PoissonDiscSampler(domain);
         sampler.Generate(sampleResolution);
         //post sampler step: curb points based on height map ?
-        tris = DelaunayRedo.BowyerWatsonTriangulation(sampler.GetData().points.ToList());
+
+        points = sampler.GetData().points.ToList();
+
+        tris = DelaunayRedo.BowyerWatsonTriangulation(points);
+        pointTriangles = DelaunayRedo.AssemblePointToTriangleConnections(points, tris);
 
         voronoiAssembler = new(domain);
-        voronoiAssembler.Generate(sampler.GetData().points.ToList(), tris);
+        voronoiAssembler.Generate(points, tris, pointTriangles);
     }
 
     // Update is called once per frame
@@ -40,8 +51,9 @@ public class WorldMapManager : MonoBehaviour
         domain.DrawGizmos();
         if (Application.isPlaying && sampler != null && sampler.GetData() != null)
         {
-            foreach (var item in sampler.GetData().points)
+            for (int i = 0; i < points.Count; i++)
             {
+                var item = points[i];
                 Gizmos.DrawSphere(item.pos, 0.1f);
             }
             sampler.DrawGizmos();
@@ -49,7 +61,8 @@ public class WorldMapManager : MonoBehaviour
             foreach (var tri in tris)
             {
 
-                //tri.DrawGizmos();
+                if (drawTris)
+                    tri.DrawGizmos();
 
 
                 Gizmos.color = Color.red;
@@ -66,7 +79,8 @@ public class WorldMapManager : MonoBehaviour
 
             }
 
-            voronoiAssembler.DrawGizmos();
+            if (drawVoronoi)
+                voronoiAssembler.DrawGizmos();
         }
     }
 }

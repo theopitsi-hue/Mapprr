@@ -1,20 +1,40 @@
 
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 
 public class VoronoiAssembler
 {
     List<Edge> voronoiEdges = new();
     MapDomain domain;
+    VoronoiCellData[] cellData;
 
     public VoronoiAssembler(MapDomain domain)
     {
         this.domain = domain;
     }
 
-    public void Generate(List<Point> vertices, List<Triangle> tris)
+    public void Generate(List<Point> centroids, List<Triangle> tris, Dictionary<Point, List<Triangle>> pointTriangles)
     {
+        cellData = new VoronoiCellData[centroids.Count];
+
+        //temp
+        List<int> land = new();
+        land.AddRange(new int[] { 1, 2, 3, 4, 5, 6 });
+
+        for (int i = 0; i < centroids.Count; i++)
+        {//todo: change from references to int indexes from the map assembler, maybe?
+            cellData[i] = new VoronoiCellData(i, centroids[i], land.Contains(i), pointTriangles[centroids[i]]);
+        }
+
+        DrawVoronoiEdgesOld(tris);
+    }
+
+    //this is a more optimized way to draw voronoi cell edges, so im keeping it for potential use in the future
+    public void DrawVoronoiEdgesOld(List<Triangle> tris)
+    {
+
         Dictionary<Edge, List<Triangle>> edgeMap = new();
         //generate an edgemap- any triangles that share an edge basically,
         //with the edge as determinant
@@ -53,10 +73,22 @@ public class VoronoiAssembler
 
     public void DrawGizmos()
     {
+
+        foreach (var item in cellData)
+        {
+
+            Handles.Label(item.centroid, " Node:" + item.index + " land:" + item.isLand);
+            foreach (var tr in item.debugMesh)
+            {
+                tr.DrawGizmos();
+            }
+        }
+
         foreach (var item in voronoiEdges)
         {
             Gizmos.color = Color.cyan;
             Gizmos.DrawLine(item.a.pos, item.b.pos);
         }
+
     }
 }

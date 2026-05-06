@@ -153,4 +153,27 @@ public class DelaunayRedo
         if (debug) Debug.Log("Generated super triangle with edges: " + v0 + "," + v1 + "," + v2);
         return new Triangle(new(v0), new(v1), new(v2));
     }
+
+    //Collects all triangles that belongs to each point. Why? Why not. Voronoi shit.
+    //Could this be done while triangulating? probably not with BowyerWatson
+    public static Dictionary<Point, List<Triangle>> AssemblePointToTriangleConnections(List<Point> points, List<Triangle> tris)
+    {
+        Dictionary<Point, List<Triangle>> output = new();
+
+        foreach (var point in points)
+        {
+            foreach (var tri in tris)
+            {
+                if (tri.HasVertex(point))
+                {
+                    if (!output.ContainsKey(point))
+                        output[point] = new List<Triangle>();
+
+                    output[point].Add(tri);
+                }
+            }
+        }
+
+        return output;
+    }
 }
