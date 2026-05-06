@@ -25,10 +25,10 @@ public class VoronoiAssembler
 
         for (int i = 0; i < centroids.Count; i++)
         {//todo: change from references to int indexes from the map assembler, maybe?
-            cellData[i] = new VoronoiCellData(i, centroids[i], land.Contains(i), pointTriangles[centroids[i]]);
+            cellData[i] = new VoronoiCellData(i, centroids[i], land.Contains(i), pointTriangles[centroids[i]], domain);
         }
 
-        DrawVoronoiEdgesOld(tris);
+        // DrawVoronoiEdgesOld(tris);
     }
 
     //this is a more optimized way to draw voronoi cell edges, so im keeping it for potential use in the future
@@ -61,7 +61,7 @@ public class VoronoiAssembler
                 Vector2 c1 = triangles[0].CircumCenter.pos;
                 Vector2 c2 = triangles[1].CircumCenter.pos;
 
-
+                //IF i had access to the cell index right here, i could give each cell its correct points. Allas.
                 if (domain.ClipLineToRect(ref c1, ref c2))
                 {
                     //create a voronoi "edge" between them
@@ -69,6 +69,8 @@ public class VoronoiAssembler
                 }
             }
         }
+
+
     }
 
     public void DrawGizmos()
@@ -81,6 +83,11 @@ public class VoronoiAssembler
             foreach (var tr in item.debugMesh)
             {
                 tr.DrawGizmos();
+            }
+            for (int i = 0; i < item.edgePoints.Count; i++)
+            {
+                Gizmos.color = Color.blue;
+                Gizmos.DrawSphere(item.edgePoints[i].pos, 0.1f);
             }
         }
 
