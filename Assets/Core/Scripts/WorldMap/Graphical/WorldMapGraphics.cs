@@ -16,6 +16,9 @@ public class WorldMapGraphics : MonoBehaviour
     public void Initialize(WorldMapGenData data)
     {
         worldMeshManager = this.AddComponentAsObject<WorldMapMeshManager>();
+
+        SupplyData(data);
+        GenerateVisuals();
     }
 
     public void SupplyData(WorldMapGenData data)

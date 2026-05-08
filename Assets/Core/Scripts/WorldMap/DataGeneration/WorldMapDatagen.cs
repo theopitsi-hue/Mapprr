@@ -20,9 +20,12 @@ public class WorldMapDatagen : MonoBehaviour
     //COLLECT DATA HERE WOOOOOOOOOOOOOOOOOOOOOO
     WorldMapGenData data;
 
+    public WorldMapGraphics graphics;
+
     void Start()
     {
         data = GenerateData();
+        graphics?.Initialize(data);
     }
 
     private WorldMapGenData GenerateData()

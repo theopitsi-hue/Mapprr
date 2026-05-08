@@ -4,7 +4,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshRenderer))]
-class WorldMapMeshManager : MonoBehaviour
+class WorldMapMeshManager : MonoBehaviour //renders land cells
 {
     //TEMPORARY
     MeshRenderer renderer;
@@ -12,7 +12,6 @@ class WorldMapMeshManager : MonoBehaviour
 
     public void Generate()
     {
-        throw new NotImplementedException();
     }
 
     public void Initialize(WorldMapGenData data)
@@ -21,8 +20,19 @@ class WorldMapMeshManager : MonoBehaviour
         renderer = GetComponent<MeshRenderer>();
 
 
-        // filter.mesh = BuildMeshIndexed(voronoiTris);
+        filter.mesh = BuildMeshIndexed(data.domain, data.VoronoiCells);
 
+    }
+
+    private Mesh BuildMeshIndexed(MapDomain domain, List<VoronoiCellData> voronoiCells)
+    {
+        var tris = new List<Triangle>();
+        foreach (var item in voronoiCells)
+        {
+            if (item.isLand)
+                tris.AddRange(item.debugMesh);
+        }
+        return BuildMeshIndexed(domain, tris);
     }
 
     public void Tick()
