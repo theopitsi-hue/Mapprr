@@ -6,6 +6,8 @@ using UnityEngine;
 [Serializable]
 public class Point
 {
+    //todo: store data about the vertex here to pass to the shaders 
+
     [SerializeField]
     public Vector2 pos;
     public float x => pos.x;
@@ -132,7 +134,7 @@ public class Triangle
 
         if (Mathf.Approximately(D, 0))
         {
-            Debug.LogWarning("Points are collinear; no circumcenter exists.");
+            //Debug.LogWarning("Points are collinear; no circumcenter exists.");
             degenerate = true;
             return Vector2.zero;
         }

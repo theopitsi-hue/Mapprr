@@ -84,6 +84,11 @@ public class MapDomain
         return false;
     }
 
+    public Vector2 ToDomainUV(Vector2 position)
+    {
+        return new Vector2(position.x / ScaleX, position.y / ScaleY);
+    }
+
     public void DrawGizmos()
     {
         Gizmos.color = Color.white;

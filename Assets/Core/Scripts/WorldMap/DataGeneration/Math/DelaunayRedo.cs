@@ -176,4 +176,14 @@ public class DelaunayRedo
 
         return output;
     }
+
+    public static List<Point> GetTriangleCentroids(List<Triangle> tris)
+    {
+        List<Point> output = new();
+        for (int i = 0; i < tris.Count; i++)
+        {
+            output.Add(tris[i].CircumCenter);
+        }
+        return output;
+    }
 }

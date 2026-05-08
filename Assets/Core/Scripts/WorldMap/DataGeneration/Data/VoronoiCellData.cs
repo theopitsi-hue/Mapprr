@@ -22,55 +22,62 @@ class VoronoiCellData
 
         for (int i = 0; i < triangles.Count; i++)
         {
-            //where potentially edits could hapen to immitate the editing capabilities of shorelines
-            //in that one fantasy map
+            // where potentially edits could hapen to immitate the editing capabilities of shorelines
+            // in that one fantasy map
 
-            //borders look like ass
+            // borders look like ass
 
-            //attempt 1 - messy
+            // attempt 1 - messy
             // edgePoints.Add(new(domain.ClampPointToBounds(triangles[i].CircumCenter.pos)));
 
-            //attempt 2 - dont include circumcenters outside of bounds
-            //very bad edges and incomplete geometry.
+            // attempt 2 - dont include circumcenters outside of bounds
+            // very bad edges and incomplete geometry.
             // if (domain.IsPointInDomain(triangles[i].CircumCenter.pos))
             //     edgePoints.Add(triangles[i].CircumCenter);
         }
 
-        Dictionary<Edge, List<Triangle>> edgeMap = new();
-        //generate an edgemap- any triangles that share an edge basically,
-        //with the edge as determinant
         foreach (var tri in triangles)
         {
-            foreach (var edge in tri.edges)
-            {
-                if (!edgeMap.ContainsKey(edge))
-                {
-                    edgeMap[edge] = new List<Triangle>();
-                }
-
-                edgeMap[edge].Add(tri);
-            }
+            Vector2 c = tri.CircumCenter.pos;
+            c = domain.ClampPointToBounds(c);
+            edgePoints.Add(new Point(c));
         }
 
-        foreach (var sharedEdge in edgeMap)
-        {
-            var tris = sharedEdge.Value;
+        // Dictionary<Edge, List<Triangle>> edgeMap = new();
+        // //generate an edgemap- any triangles that share an edge basically,
+        // //with the edge as determinant
+        // foreach (var tri in triangles)
+        // {
+        //     foreach (var edge in tri.edges)
+        //     {
+        //         if (!edgeMap.ContainsKey(edge))
+        //         {
+        //             edgeMap[edge] = new List<Triangle>();
+        //         }
 
-            //if an edge is shared between 2 triangles exactly
-            if (tris.Count == 2)
-            {
-                Vector2 c1 = tris[0].CircumCenter.pos;
-                Vector2 c2 = tris[1].CircumCenter.pos;
+        //         edgeMap[edge].Add(tri);
+        //     }
+        // }
+
+        // foreach (var sharedEdge in edgeMap)
+        // {
+        //     var tris = sharedEdge.Value;
+
+        //     //if an edge is shared between 2 triangles exactly
+        //     if (tris.Count == 2)
+        //     {
+        //         Vector2 c1 = tris[0].CircumCenter.pos;
+        //         Vector2 c2 = tris[1].CircumCenter.pos;
 
 
-                if (domain.ClipLineToRect(ref c1, ref c2))
-                {
-                    //create a voronoi "edge" between them
-                    edgePoints.Add(new(c1));
-                    edgePoints.Add(new(c2));
-                }
-            }
-        }
+        //         if (domain.ClipLineToRect(ref c1, ref c2))
+        //         {
+        //             //create a voronoi "edge" between them
+        //             edgePoints.Add(new(c1));
+        //             edgePoints.Add(new(c2));
+        //         }
+        //     }
+        // }
 
 
         //sorting for triangle creation for mesh stage, might be able to gpu it
