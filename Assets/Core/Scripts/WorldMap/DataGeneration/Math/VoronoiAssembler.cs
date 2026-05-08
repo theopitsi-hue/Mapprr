@@ -1,5 +1,7 @@
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
 using Unity.VisualScripting;
 using UnityEditor;
@@ -19,8 +21,9 @@ public class VoronoiAssembler
         random.InitState();
     }
 
-    public void Generate(List<Point> centroids, List<Triangle> tris, Dictionary<Point, List<Triangle>> pointTriangles)
+    public void Generate(List<Point> centroids, List<Triangle> tris)
     {
+        var pointTriangles = DelaunayRedo.AssemblePointToTriangleConnections(centroids, tris);
         cellData = new VoronoiCellData[centroids.Count];
 
         //temp
@@ -34,11 +37,9 @@ public class VoronoiAssembler
 
 
         for (int i = 0; i < centroids.Count; i++)
-        {//todo: change from references to int indexes from the map assembler, maybe?
+        {
             cellData[i] = new VoronoiCellData(i, centroids[i], land.Contains(i), pointTriangles[centroids[i]], domain);
         }
-
-        // DrawVoronoiEdgesOld(tris);
     }
 
     public List<Triangle> GetAllMesh()
@@ -142,5 +143,10 @@ public class VoronoiAssembler
             Gizmos.DrawLine(item.a.pos, item.b.pos);
         }
 
+    }
+
+    public List<VoronoiCellData> GetVoronoiData()
+    {
+        return cellData.ToList();
     }
 }

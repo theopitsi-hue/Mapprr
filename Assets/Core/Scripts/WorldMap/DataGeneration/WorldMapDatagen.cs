@@ -5,144 +5,58 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
 
-[RequireComponent(typeof(MeshFilter))]
-[RequireComponent(typeof(MeshRenderer))]
 public class WorldMapDatagen : MonoBehaviour
 {
     [SerializeField]
     MapDomain domain = new MapDomain(100, 100);
-    [SerializeField]
     PoissonDiscSampler sampler;
     [Range(0.1f, 5)]
     public float sampleResolution = 2;
-    [SerializeField]
     VoronoiAssembler voronoiAssembler;
 
     public bool drawVoronoi = false;
     public bool drawTris = false;
 
     //COLLECT DATA HERE WOOOOOOOOOOOOOOOOOOOOOO
-    List<Point> centroids;
-    //List<Point> triangleCentroids; //centroids produced by the delu triangulation
-    List<Triangle> tris;
-    List<Triangle> voronoiTris;
-
-    //associates points/centroids with all triangles containing them
-    Dictionary<Point, List<Triangle>> pointDeluTriDictionary;
-
-    //TEMPORARY
-    MeshRenderer renderer;
-    MeshFilter filter;
+    WorldMapGenData data;
 
     void Start()
     {
+        data = GenerateData();
+    }
+
+    private WorldMapGenData GenerateData()
+    {
+        var data = new WorldMapGenData(domain);
         sampler = new PoissonDiscSampler(domain);
         sampler.Generate(sampleResolution);
-        //post sampler step: curb points based on height map ?
+        //post sampler step: curb point resolution based on if its land or not? thru heightmap?
 
-        centroids = sampler.GetData().points.ToList();
+        data.SetCentroids(sampler.GetData().points.ToList());
 
-        tris = DelaunayRedo.BowyerWatsonTriangulation(centroids);
-        pointDeluTriDictionary = DelaunayRedo.AssemblePointToTriangleConnections(centroids, tris);
-        //triangleCentroids = DelaunayRedo.GetTriangleCentroids(tris);
+        data.SetDelaunayTriangles(DelaunayRedo.BowyerWatsonTriangulation(data.Centroids));
 
         voronoiAssembler = new(domain);
-        voronoiAssembler.Generate(centroids, tris, pointDeluTriDictionary);
-        voronoiTris = voronoiAssembler.GetAllMesh();
+        voronoiAssembler.Generate(data.Centroids, data.DelaunayTriangles);
+        data.SetVoronoiData(voronoiAssembler.GetVoronoiData());
 
-        filter = GetComponent<MeshFilter>();
-        renderer = GetComponent<MeshRenderer>();
-        fillMesh();
+        return data;
     }
 
-    private void fillMesh()
-    {
-        // Mesh mesh = new Mesh();
-
-        // List<Vector3> vertices = new();
-        // List<int> indices = new();
-        // List<Vector2> uv = new();
-
-        // //approach 1 - triangles from delaunay
-        // for (int i = 0; i < tris.Count; i++)
-        // {
-        //     var tri = tris[i];
-        //     int baseIndex = vertices.Count;
-        //     vertices.Add(tri.a.pos);
-        //     vertices.Add(tri.b.pos);
-        //     vertices.Add(tri.c.pos);
-
-        //     indices.Add(baseIndex + 0);
-        //     indices.Add(baseIndex + 1);
-        //     indices.Add(baseIndex + 2);
-
-        //     uv.Add(domain.ToDomainUV(tri.a.pos));
-        //     uv.Add(domain.ToDomainUV(tri.b.pos));
-        //     uv.Add(domain.ToDomainUV(tri.c.pos));
-        // }
-
-        // mesh.SetVertices(vertices);
-        // mesh.SetUVs(0, uv);
-        // mesh.SetTriangles(indices, 0);
-        // mesh.RecalculateNormals();
-        // mesh.RecalculateBounds();
-
-        filter.mesh = BuildMeshIndexed(voronoiTris);
-
-    }
-
-    public Mesh BuildMeshIndexed(List<Triangle> tris)
-    {
-        var vertices = new List<Vector3>();
-        var indices = new List<int>();
-        var uvs = new List<Vector2>();
-        var map = new Dictionary<Vector3, int>();
-
-        int GetIndex(Vector3 v)
-        {
-            if (map.TryGetValue(v, out int index))
-                return index;
-
-            index = vertices.Count;
-            vertices.Add(v);
-
-            uvs.Add(domain.ToDomainUV(v));
-
-            map[v] = index;
-            return index;
-        }
-
-        foreach (var t in tris)
-        {
-            // Flip winding if needed
-            indices.Add(GetIndex(t.a.pos));
-            indices.Add(GetIndex(t.c.pos));
-            indices.Add(GetIndex(t.b.pos));
-        }
-
-        Mesh mesh = new Mesh();
-        mesh.SetVertices(vertices);
-        mesh.SetTriangles(indices, 0);
-        mesh.SetUVs(0, uvs);
-        mesh.RecalculateNormals();
-        mesh.RecalculateBounds();
-
-        return mesh;
-    }
 
     private void OnDrawGizmos()
     {
         domain.DrawGizmos();
         if (Application.isPlaying && sampler != null && sampler.GetData() != null)
         {
-            for (int i = 0; i < centroids.Count; i++)
+            for (int i = 0; i < data.Centroids.Count; i++)
             {
-                var item = centroids[i];
+                var item = data.Centroids[i];
                 Gizmos.DrawSphere(item.pos, 0.1f);
             }
             sampler.DrawGizmos();
 
-            foreach (var tri in tris)
+            foreach (var tri in data.DelaunayTriangles)
             {
 
                 if (drawTris)
@@ -164,7 +78,23 @@ public class WorldMapDatagen : MonoBehaviour
             }
 
             if (drawVoronoi)
-                voronoiAssembler.DrawGizmos();
+            {
+                Gizmos.color = Color.cyan;
+                foreach (var item in data.VoronoiCells)
+                {
+                    //edge points r already ordered
+                    for (int i = 0; i < item.edgePoints.Count; i++)
+                    {
+                        int next = i + 1;
+                        if (i == item.edgePoints.Count - 1)
+                        {
+                            next = 0;
+                        }
+                        //this generates double edges. Oh well.
+                        Gizmos.DrawLine(item.edgePoints[i].pos, item.edgePoints[next].pos);
+                    }
+                }
+            }
         }
     }
 }
